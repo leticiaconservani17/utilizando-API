@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <style>
+        .hidden{
+            display: none;
+        }
+    </style>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,26 +39,41 @@
         </div>
     </form>
 
+    <div id="edit" class="hidden">
+        <hr>
+        <h2>Alterar produto</h2>
+
+        <form id="formEdit">
+            <input type="hidden" name="id">
+            <div>
+                <label>Nome</label>
+                <input type="text" name="name">
+            </div>
+            <div>
+                <label>Marca</label>
+                <input type="text" name="brand">
+            </div>
+            <div>      
+                <label>Preço</label>
+                <input type="text" name="price">
+            </div>
+            <div>
+                <button type="submit">Alterar</button>
+            </div>
+        </form>
+    </div>
+
 
     <script>
         const API_URL = 'http://localhost:8080/api/products'
 
         const productsList = document.querySelector('#products-list')
         const form = document.querySelector('#form')
-
-
-        function obterLista(){
-            fetch(API_URL).then(response => {
-                response.json().then(data =>{
-                    const productsHtml = data.map(product =>`
-                    <li>
-                        ${product.name} -  ${product.brand} - R$ ${product.price} 
-                        <a class="remove-button" href="#" data-id="${product._id}">[Excluir]</a>
-                    </li>
-                    `).join('') 
-                    productsList.innerHTML = productsHtml
-
-                    const removeButton = document.querySelectorAll('.remove-button')
+        const formEdit = document.querySelector('#formEdit')
+        const edit = document.querySelector('#edit')
+        
+        function eventRemoveButton(){
+            const removeButton = document.querySelectorAll('.remove-button')
                     removeButton.forEach(botao =>{
 
                         botao.onclick = function(e) {
@@ -72,39 +92,110 @@
                             })
                         }
                     })
+        }
+
+        function eventEditButton(){
+            const editButton = document.querySelectorAll('.edit-button')
+                    editButton.forEach(botao =>{
+
+                        botao.onclick = function(e) {
+                            e.preventDefault()
+                            edit.classList.remove('hidden')
+
+                            const id = this.dataset.id
+                            const name = this.dataset.name
+                            const brand = this.dataset.brand
+                            const price = this.dataset.price
+
+                            document.forms['formEdit'].id.value = id
+                            document.forms['formEdit'].name.value = name
+                            document.forms['formEdit'].brand.value = brand
+                            document.forms['formEdit'].price.value = price
+                        }
+                    })
+        }
+
+        function obterLista(){
+
+            fetch(API_URL).then(response => {
+                response.json().then(data =>{
+                    const productsHtml = data.map(product =>`
+                    <li>
+                        ${product.name} -  ${product.brand} - R$ ${product.price} 
+                        <a class="edit-button" href="#" data-id="${product._id}"
+                        data-name="${product.name}"
+                        data-brand="${product.brand}"
+                        data-price="${product.price}"
+                        >[Editar]</a>
+                        <a class="remove-button" href="#" data-id="${product._id}">[Excluir]</a>
+                    
+                    </li>
+                    `).join('') 
+                    productsList.innerHTML = productsHtml
+                    eventRemoveButton()
+                    eventEditButton()
+
+                    
                 })
             })
         }
 
         obterLista()
 
-        form.onsubmit = function(e) {
+        form.onsubmit = function(e){
             e.preventDefault()
-
             const name = document.forms['form'].name.value
             const brand = document.forms['form'].brand.value
             const price = document.forms['form'].price.value
 
-            fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name,
-                    brand,
-                    price
-                })
-            }).then(response => {
-                response.json().then(data => {
-                    if (data.message === 'sucess'){
-                        alert('Cadastro realizado')
-                        obterLista()
-                    }
-                })
-            })
-            form.reset()
-            
+            fetch(`${API_URL}`,{
+                                method: "POST",
+                                headers: {
+                                    'Content-type' : 'application/json',
+                                },
+                                body:JSON.stringify({
+                                    name,
+                                    brand,
+                                    price,
+                                })
+                            }).then(response => {
+                                 response.json().then(data => {
+                                    if (data.message === 'sucess'){
+                                        obterLista()
+                                        alert('Cadastro realizado')
+                                    }
+                                })
+                            })
+        }
+        
+
+        formEdit.onsubmit = function(e){
+            e.preventDefault()
+
+            const name = document.forms['formEdit'].name.value
+                            const brand = document.forms['formEdit'].brand.value
+                            const price = document.forms['formEdit'].price.value
+                            const id = document.forms['formEdit'].id.value
+
+                            fetch(`${API_URL}/${id}`,{
+                                method: "PUT",
+                                headers: {
+                                    'Content-type' : 'application/json',
+                                },
+                                body:JSON.stringify({
+                                    name,
+                                    brand,
+                                    price,
+                                })
+                            }).then(response => {
+                                response.json().then(data => {
+                                    if (data.message === 'sucess'){
+                                        obterLista()
+                                        alert('Alterado com sucesso')
+                                    }
+                                })
+                            })
+                      
         }
         
 
