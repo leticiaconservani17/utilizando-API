@@ -3,8 +3,17 @@
 <head>
     <style>
         .hidden{
-            display: none;
+        display: none;
         }
+
+        .PostHidden{
+
+        display: none;
+        }
+
+        /* .cadButton{
+        display:block;
+        } */
     </style>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -18,7 +27,11 @@
         <ul id="products-list"></ul>
 
     <hr>
+
+    <button class="cadButton" id="cadButton">CADASTRAR</button>
     
+    <div id="PostHidden" class="PostHidden">
+        
     <h2>Cadastro de Produtos</h2>
 
     <form id="form">
@@ -38,6 +51,8 @@
             <button type="submit">Cadastrar</button>
         </div>
     </form>
+    </div>
+    
 
     <div id="edit" class="hidden">
         <hr>
@@ -71,6 +86,14 @@
         const form = document.querySelector('#form')
         const formEdit = document.querySelector('#formEdit')
         const edit = document.querySelector('#edit')
+        const cad = document.querySelector('#PostHidden')
+        const cadButton = document.querySelector('#cadButton')
+    
+
+        cadButton.onclick = function(){
+            cad.classList.remove('PostHidden')
+            cadButton.style.display = "none";
+        }
         
         function eventRemoveButton(){
             const removeButton = document.querySelectorAll('.remove-button')
@@ -93,6 +116,9 @@
                         }
                     })
         }
+
+
+
 
         function eventEditButton(){
             const editButton = document.querySelectorAll('.edit-button')
@@ -161,11 +187,16 @@
                             }).then(response => {
                                  response.json().then(data => {
                                     if (data.message === 'sucess'){
+                                        form.reset()
+                                        cad.classList.add('PostHidden')
+                                        cadButton.style.display = "block";
                                         obterLista()
                                         alert('Cadastro realizado')
                                     }
                                 })
                             })
+
+
         }
         
 
@@ -190,6 +221,7 @@
                             }).then(response => {
                                 response.json().then(data => {
                                     if (data.message === 'sucess'){
+                                        edit.classList.add('hidden')
                                         obterLista()
                                         alert('Alterado com sucesso')
                                     }
